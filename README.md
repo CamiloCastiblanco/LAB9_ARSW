@@ -133,31 +133,159 @@ Cuando un conjunto de usuarios consulta un enésimo número (superior a 1000000)
     newman run ARSW_LOAD-BALANCING_AZURE.postman_collection.json -e [ARSW_LOAD-BALANCING_AZURE].postman_environment.json -n 10 &
     newman run ARSW_LOAD-BALANCING_AZURE.postman_collection.json -e [ARSW_LOAD-BALANCING_AZURE].postman_environment.json -n 10
     ```
+  ![newman](images/part1/newman1.png)
+   ![newman](images/part1/newman2.png)
+
+
+
 
 10. La cantidad de CPU consumida es bastante grande y un conjunto considerable de peticiones concurrentes pueden hacer fallar nuestro servicio. Para solucionarlo usaremos una estrategia de Escalamiento Vertical. En Azure diríjase a la sección *size* y a continuación seleccione el tamaño `B2ms`.
 
 ![Imágen 3](images/part1/part1-vm-resize.png)
 
 11. Una vez el cambio se vea reflejado, repita el paso 7, 8 y 9.
+
+* 1000000
+ ![Endpoint](images/part1/test2_1.png)
+* 1010000
+  ![Endpoint](images/part1/test2_2.png)
+* 1020000
+  ![Endpoint](images/part1/test2_3.png)
+* 1030000
+  ![Endpoint](images/part1/test2_4.png)
+* 1040000
+  ![Endpoint](images/part1/test2_5.png)
+* 1050000
+  ![Endpoint](images/part1/test2_6.png)
+* 1060000
+  ![Endpoint](images/part1/test2_7.png)
+* 1070000
+  ![Endpoint](images/part1/test2_8.png)
+* 1080000
+  ![Endpoint](images/part1/test2_9.png)
+* 1090000
+  ![Endpoint](images/part1/test2_10.png)
+
+* **Métricas**
+  ![metricas](images/part1/metricas2.png)
+
+* **Newman**
+  ![newman](images/part1/newman2_1.png)
+  ![newman](images/part1/newman2_2.png)
+
+
 12. Evalue el escenario de calidad asociado al requerimiento no funcional de escalabilidad y concluya si usando este modelo de escalabilidad logramos cumplirlo.
+   
+   Al realizar la escalabilidad vertical si se cumple con el escenario de calidad propuesto, ya que al aumentar las 
+   especificaciones de la VM, las respuestas de las solicitudes son mejores y se aprovecha de mejor manera la CPU.
+
 13. Vuelva a dejar la VM en el tamaño inicial para evitar cobros adicionales.
 
 **Preguntas**
 
 1. ¿Cuántos y cuáles recursos crea Azure junto con la VM?
+   * Virtual network/subnet
+   * Public IP address
+   * Network security group
+   * Network Interface
+   * OS disk 
 2. ¿Brevemente describa para qué sirve cada recurso?
+   * **Virtual network/subnet**
+   Similar a una red tradicional, permite la comunicación entre diferentes recursos Azure como lo
+   pueden ser las máquinas virtuales, usuarios, internet o demás redes locales de manera segura. VNet
+   aporta las ventajas adicionales de la infraestrucutra de Azure como la escalabilidad, la disponibilidad 
+   y el aislamiento. 
+   
+   * **Public IP address**
+   Permite que los recursos de Azure se comuniquen con Internet y los servicios públicos de Azure. Las direcciones
+   son asignadas de manera dinámica por Azure. 
+   
+   * **Network security group**
+   Se utiliza a modo de filtro de red desde y para los recursos de Azure en una red virtual de Azure. Se basa principalmente
+   en un conjunto de reglas de seguridad que permiten o niegan el tráfico de red entrante o red saliente. Cada regla debe tener
+   especificado origen, destino, puerto y protocolo. 
+
+   * **Network Interface**
+   Componente que permite la comunicación entre las máquinas virtuales de Azure con Internet y demás recursos de Azure.   
+
+   * **OS disk**
+   Almacenamiento del OS de la máquina virtual creada. 
+   
 3. ¿Al cerrar la conexión ssh con la VM, por qué se cae la aplicación que ejecutamos con el comando `npm FibonacciApp.js`? ¿Por qué debemos crear un *Inbound port rule* antes de acceder al servicio?
-4. Adjunte tabla de tiempos e interprete por qué la función tarda tando tiempo.
+   Al correr el comando, el proceso será asociado al usuario que realizó la acción, si el usaurio cierra la conexión, se cerrará el proceso. Al iniciar la máquina, la mayoría de puertos se encontrarán cerrados,
+   por cuestiones de seguridad, el servicio está ligado a un puerto de ejecución, se debe abrir el puerto de la máquina virtual para que sea posible la conexión a dicho puerto. 
+
+4. Adjunte tabla de tiempos e interprete por qué la función tarda tanto tiempo.
+
+   | N | B1ls(s) | B2s(s)|
+   | ------ | ------ | ------ |
+   | 1000000 | 23.58 | 18.32 |
+   | 1010000 | 24.06 | 19.84 |
+   | 1020000 | 24.51 | 20.27 |
+   | 1030000 | 25.03 | 20.62 |
+   | 1040000 | 25.57 | 20.84 |
+   | 1050000 | 26.06 | 21.20 |
+   | 1060000 | 26.70 | 21.72 |
+   | 1070000 | 27.14 | 22.32 |
+   | 1080000 | 27.63 | 22.67 |
+   | 1090000 | 28.20 | 23.23 |
+
+   La secuencia de Fibonacci consume muchos recursos para que pueda ser calculada, al tener una máquina con menos recursos, se tomará 
+   más tiempo para realizar el calculo, mientras que con una máquina un poco más robusta, los tiempos de espera son menores.
+
 5. Adjunte imágen del consumo de CPU de la VM e interprete por qué la función consume esa cantidad de CPU.
+   ![metricas](images/part1/metricas2.png)
+
+   La secuencia de Fibonacci realiza varios cálculos redundantes, es  por eso que con cada petición el consumo de CPU es grande. Una posible
+   solución es utilizar algún método de memorización que permita guardar los cálculos anteriormente realizados y que al calcular un número elevado
+   no sea necesario realizar todo el cálculo, sino reutilizar los resultados anteriormente obtenidos.
+
 6. Adjunte la imagen del resumen de la ejecución de Postman. Interprete:
     * Tiempos de ejecución de cada petición.
-    * Si hubo fallos documentelos y explique.
+      ![resume](images/part1/resumePostman.png)
+   El tiempo promedio de cada petición fue de _17.7s_. El aproximado de datos recibidos fue de _2.09MB_ 
+  * Si hubo fallos documentelos y explique.
+   No hubo fallos en la ejecución. 
 7. ¿Cuál es la diferencia entre los tamaños `B2ms` y `B1ls` (no solo busque especificaciones de infraestructura)?
+
+   | Instancia | Núcleos | RAM | Almacenamiento temporal | Pago por uso |
+   | ------ | ------ | ------ |------ |------ |
+   | B1ls | 1 | 0.5 GiB | 2 GiB | $0,0052/hora |
+   | B2ms | 2 | 2 GiB | 16 GiB | $0,0832/hora |   
+
+   Ambos tamaños se usan principalmente para desarrollo o pruebas por lo que el tráfico de datos que manejan es bajo/medio
+   
+
 8. ¿Aumentar el tamaño de la VM es una buena solución en este escenario?, ¿Qué pasa con la FibonacciApp cuando cambiamos el tamaño de la VM?
+   Aumentar el tamaño se podría considerar como una solución temporal al problema, porque aunque al aumentar el tamaño de la máquina se ve una disminución 
+   de uso de recursos, se debería plantear una solución a largo plazo, una solución en la cual se eviten cálculos redundantes mediante la memorización de 
+   resultados anteriores, logrando asi disminuir aún más los tiempos de respuesta. 
+
 9. ¿Qué pasa con la infraestructura cuando cambia el tamaño de la VM? ¿Qué efectos negativos implica?
+   Al hacer el cambio de tamaño, la máquina necesita reiniciarse lo que hace que la conexión **SSH** se caiga y sea necesario realizarla nuevamente, ademas de que 
+   si no se guarda la IP, es posible que Azure la cambie. El reinicio de la máquina implica un reinicio del servidor web lo que implica que las peticiones realizadas 
+   en ese lapso de tiempo no logren ser atendidas. 
+
 10. ¿Hubo mejora en el consumo de CPU o en los tiempos de respuesta? Si/No ¿Por qué?
+   Sí, con el nuevo tamaño la máquina virtual dispone de más recursos para realizar cálculos 
+   y atender peticiones. 
+
 11. Aumente la cantidad de ejecuciones paralelas del comando de postman a `4`. ¿El comportamiento del sistema es porcentualmente mejor?
 
+* Informe petición 1
+  ![request](images/part1/request1.png)
+
+* Informe petición 2
+  ![request](images/part1/request2.png)
+
+* Informe petición 3
+  ![request](images/part1/request3.png)
+
+* Informe petición 4
+  ![request](images/part1/request4.png)
+
+
+El comportamiento del sistema no mejoró. 
 ### Parte 2 - Escalabilidad horizontal
 
 #### Crear el Balanceador de Carga
@@ -222,18 +350,23 @@ forever start FibonacciApp.js
 
 Realice este proceso para las 3 VMs, por ahora lo haremos a mano una por una, sin embargo es importante que usted sepa que existen herramientas para aumatizar este proceso, entre ellas encontramos Azure Resource Manager, OsDisk Images, Terraform con Vagrant y Paker, Puppet, Ansible entre otras.
 
+![](images/part2/machines.png)
+
 #### Probar el resultado final de nuestra infraestructura
 
-1. Porsupuesto el endpoint de acceso a nuestro sistema será la IP pública del balanceador de carga, primero verifiquemos que los servicios básicos están funcionando, consuma los siguientes recursos:
+1. Por supuesto el endpoint de acceso a nuestro sistema será la IP pública del balanceador de carga, primero verifiquemos que los servicios básicos están funcionando, consuma los siguientes recursos:
 
 ```
 http://52.155.223.248/
 http://52.155.223.248/fibonacci/1
 ```
 
-2. Realice las pruebas de carga con `newman` que se realizaron en la parte 1 y haga un informe comparativo donde contraste: tiempos de respuesta, cantidad de peticiones respondidas con éxito, costos de las 2 infraestrucruras, es decir, la que desarrollamos con balanceo de carga horizontal y la que se hizo con una maquina virtual escalada.
+![](images/part2/frontEndOK.png)
 
-3. Agregue una 4 maquina virtual y realice las pruebas de newman, pero esta vez no lance 2 peticiones en paralelo, sino que incrementelo a 4. Haga un informe donde presente el comportamiento de la CPU de las 4 VM y explique porque la tasa de éxito de las peticiones aumento con este estilo de escalabilidad.
+2. Realice las pruebas de carga con `newman` que se realizaron en la parte 1 y haga un informe comparativo donde contraste: tiempos de respuesta, cantidad de peticiones respondidas con éxito, costos de las 2 infraestrucruras, es decir, la que desarrollamos con balanceo de carga horizontal y la que se hizo con una máquina virtual escalada.
+![](images/part2/newman.png)
+
+3. Agregue una 4 máquina virtual y realice las pruebas de newman, pero esta vez no lance 2 peticiones en paralelo, sino que incrementelo a 4. Haga un informe donde presente el comportamiento de la CPU de las 4 VM y explique porque la tasa de éxito de las peticiones aumento con este estilo de escalabilidad.
 
 ```
 newman run ARSW_LOAD-BALANCING_AZURE.postman_collection.json -e [ARSW_LOAD-BALANCING_AZURE].postman_environment.json -n 10 &
@@ -245,14 +378,42 @@ newman run ARSW_LOAD-BALANCING_AZURE.postman_collection.json -e [ARSW_LOAD-BALAN
 **Preguntas**
 
 * ¿Cuáles son los tipos de balanceadores de carga en Azure y en qué se diferencian?, ¿Qué es SKU, qué tipos hay y en qué se diferencian?, ¿Por qué el balanceador de carga necesita una IP pública?
+   - **Load Balancer Estándar**: Equilibra la carga del tráfico de la capa de red buscando un alto rendimiento y latencia baja, enruta el tráfico dentro y entre regiones hacia las zonas de disponiblidad para obtener una resistencia alta.
+   - **Gateway Load Balancer**: Habilita escenarios que necesitan encadenamiento de servicios como análisis, firewall, etc.
+   - **Load Balancer Básico**: Para aplicaciones que no necesitan alta disponibilidad o redundancia.
+   - **SKU**: _Stock Keeping unit_, son niveles de servicio que ofrecen precios predecibles y varias opciones para alinearse con la capacidad y los patrones de uso de su registro de docker privado en Azure.
+      - Los niveles son: **Basic**, **Estándar**, **Premium** y van desde lo más básico hasta lo más avanzado, se diferencian en casi todas sus características: almacenamiento, operaciones de lectura/escritura por minuto, ancho de banda de carga/descarga, webhooks, etc.
+   - El balanceador necesita una IP pública porque es a esta IP que se van a dirigir las peticiones del front, de esta forma nos aseguramos que el número de servidores backend no sea un dato de importancia para el front, permitiendo escalar horizontalmente y balanceando la carga a medida que sea necesario.
+
 * ¿Cuál es el propósito del *Backend Pool*?
+   - Definir el grupo de recursos que atenderán el tráfico de una regla de equilibrio de carga determinada.
+
 * ¿Cuál es el propósito del *Health Probe*?
+   - Los sondeos de estado de un balanceador de carga se utilizan para supervisar el estado de las instancias de backend.
+
 * ¿Cuál es el propósito de la *Load Balancing Rule*? ¿Qué tipos de sesión persistente existen, por qué esto es importante y cómo puede afectar la escalabilidad del sistema?.
+   - Las reglas del balanceador de cargas nos permiten configurar el tráfico que llega al grupo de backend, pueden ser de **equilibrio de carga, alta disponibilidad, NAT de entrada** y **reglas de salida.**
+   - En azure existen 3 tipos de sesiones persistencia: 
+      - **Ninguno(hash-based):** Peticiones recurrentes de un mismo cliente podrían ser atendidas por máquinas diferentes del backend (no importa el estado de la petición).
+      - **IP del cliente:** Todas las peticiones que procedan de una misma IP de origen serán atendidas por la misma máquina del backend.
+      - **IP y protocolo del cliente:** Todas las peticiones que procedan de una misma IP y puerto de origen serán atendidas por la misma máquina del backend, pero si vienen de la misma IP pero con un puerto de origen diferente podrían ser atendidas por otra máquina del backend.
+
 * ¿Qué es una *Virtual Network*? ¿Qué es una *Subnet*? ¿Para qué sirven los *address space* y *address range*?
+   - **Red virtual:** Es una red que permite la interconexión de dispositivos y máquinas virtuales mediante software.
+   - **Subnet:** Es una segmentación de una red física o red virtual, que controlan su propio rango de direcciones IP.
+   - **Address Space:** Cuando se crea una red virtual, se debe especificar un rango de direcciones IP que no se superponga con otro rango; en resumen es la dirección IP de identifiación de la red.
+   - **Address Range:** Determina el número de direcciones que se tienen o se pueden tener en un address space y dependiendo de la cantidad de recursos que se necesiten en la _Virtual Network_, el rango aumentará o disminuirá.
+
 * ¿Qué son las *Availability Zone* y por qué seleccionamos 3 diferentes zonas?. ¿Qué significa que una IP sea *zone-redundant*?
+   - **Availability Zone:** Son zonas que buscan garantizar una alta disponibilidad replicando sus aplicaciones y datos con el fin de protegerlos de puntos de fallo. Son zonas que se encuentran dentro de una región y cada una de ellas se compone de uno o más datacenters con todas las medidas se calidad y seguridad.
+   - **IP zone-redundant:** Son zonas que azure separa de forma física y lógica, lo que permite mejorar la conectividad de la red privada y disminuye fallos de disponibilidad.
+
 * ¿Cuál es el propósito del *Network Security Group*?
+   - Un _Network Security Group_ permite filtrar el tráfico desde y hacia los recursos de una _Virtual Network_. Este grupo nos permite definir reglas de entrada y salida que permitan administrar el tráfico entrante y saliente de los recursos de azure.
+
 * Informe de newman 1 (Punto 2)
 * Presente el Diagrama de Despliegue de la solución.
+![](images/DespliegueLab9.png)
 
 
 
